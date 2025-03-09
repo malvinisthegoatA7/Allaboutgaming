@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Shooter</title>
+  <style>
+    #game-container {
+      width: 400px;
+      height: 300px;
+      border: 2px solid black;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #player, #enemy {
+      width: 30px;
+      height: 30px;
+      position: absolute;
+    }
+
+    #player {
+      background-color: blue;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #enemy {
+      background-color: red;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .projectile {
+      width: 5px;
+      height: 10px;
+      background-color: black;
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="player"></div>
+    <div id="enemy"></div>
+  </div>
+
+  <script>
+    const gameContainer = document.getElementById('game-container');
+    const player = document.getElementById('player');
+    const enemy = document.getElementById('enemy');
+
+    let playerX = gameContainer.offsetWidth / 2 - player.offsetWidth / 2;
+    let enemyX = gameContainer.offsetWidth / 2 - enemy.offsetWidth / 2;
+    let enemySpeed = 2;
+
+    function moveEnemy() {
+      enemyX += enemySpeed;
+      if (enemyX <= 0 || enemyX + enemy.offsetWidth >= gameContainer.offsetWidth) {
+        enemySpeed *= -1;
+      }
+      enemy.style.left = enemyX + 'px';
+    }
+
+    function createProjectile() {
+      const projectile = document.createElement('div');
+      projectile.classList.add('projectile');
+      projectile.style.left = playerX + player.offsetWidth / 2 - 2.5 + 'px';
+      projectile.style.bottom = player.offsetHeight + 10 + 'px';
+      gameContainer.appendChild(projectile);
+
+      let projectileY = player.offsetHeight + 10;
+      const projectileInterval = setInterval(() => {
+        projectileY += 5;
+        projectile.style.bottom = projectileY + 'px';
+
+        if (projectileY >= gameContainer.offsetHeight) {
+          clearInterval(projectileInterval);
+          projectile.remove();
+        }
+
+        if (checkCollision(projectile, enemy)) {
+          clearInterval(projectileInterval);
+          projectile.remove();
+          alert("You hit the enemy!");
+          resetGame();
+        }
+
+      }, 30);
+    }
+
+    function checkCollision(element1, element2) {
+      const rect1 = element1.getBoundingClientRect();
+      const rect2 = element2.getBoundingClientRect();
+      return !(
+        rect1.top > rect2.bottom ||
+        rect1.bottom < rect2.top ||
+        rect1.right < rect2.left ||
+        rect1.left > rect2.right
+      );
+    }
+
+    function resetGame(){
+      enemyX = gameContainer.offsetWidth / 2 - enemy.offsetWidth / 2;
+      enemy.style.left = enemyX + 'px';
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === ' ') {
+        createProjectile();
+      }
+    });
+
+    setInterval(moveEnemy, 50);
+  </script>
+</body>
+</html>
